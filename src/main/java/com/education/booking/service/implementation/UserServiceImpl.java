@@ -3,23 +3,31 @@ package com.education.booking.service.implementation;
 import com.education.booking.exceptions.CustomException;
 import com.education.booking.model.dto.UserDTO;
 import com.education.booking.model.entity.User;
+import com.education.booking.model.enums.Role;
 import com.education.booking.model.enums.Status;
-import com.education.booking.model.enums.UserType;
+import com.education.booking.model.repository.RoleRepo;
 import com.education.booking.model.repository.UserRepository;
 import com.education.booking.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.mail.internet.InternetAddress;
+import java.util.ArrayList;
+import java.util.Collection;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserRepository userRepository;
+    private final RoleRepo roleRepo;
     private final ObjectMapper mapper;
 
 
@@ -43,9 +51,17 @@ public class UserServiceImpl implements UserService {
         );
         User user = mapper.convertValue(userDTO, User.class);
         user.setStatus(Status.A);
-        user.setType(UserType.User);
+        Role role = roleRepo.findByName("ROLE_USER");
+        user.getRoles().add(role);
         User save = userRepository.save(user);
         log.info("[Created]" + save);
+    }
+
+    @Override
+    public User getUser(String email) {
+        return userRepository.
+                findByEmailAndStatus(email, Status.A).
+                orElseThrow(() -> new CustomException("Пользователь с таким email не найден", HttpStatus.NOT_FOUND));
     }
 
     public void changePassword(UserDTO userDTO) {
@@ -65,30 +81,35 @@ public class UserServiceImpl implements UserService {
         log.info("[Saved] " + save);
     }
 
-    public void changeRole(Long id, UserType userType) {
+    /*public void changeRole(Long id, UserType userType) {
         User user = getUser(id);
         user.setType(userType);
         User save=userRepository.save(user);
         log.info("[Saved] Role change " + save);
+    }*/
+
+    @Override
+    public Role saveRole(Role role) {
+        log.info("Saving a new role {} to db", role.getName());
+        return roleRepo.save(role);
     }
 
-    public void deleteUser(Long id){
+    public void deleteUser(Long id) {
         User user = getUser(id);
         user.setStatus(Status.C);
         userRepository.save(user);
     }
 
-    public User getUser(Long id){
-        User user = userRepository.findById(id).orElseThrow(
+    public User getUser(Long id) {
+        return userRepository.findById(id).orElseThrow(
                 () -> {
                     log.error("[Find User] User not found id=" + id);
                     throw new CustomException("Пользователь с таким id не существует", HttpStatus.BAD_REQUEST);
                 }
         );
-        return user;
     }
 
-    public UserDTO getUserDTO(Long id){
+    public UserDTO getUserDTO(Long id) {
         User user = userRepository.findById(id).orElseThrow(
                 () -> {
                     log.error("[Find User] User not found id=" + id);
@@ -96,5 +117,21 @@ public class UserServiceImpl implements UserService {
                 }
         );
         return mapper.convertValue(user, UserDTO.class);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = getUser(email);
+        if(user == null) {
+            log.error(String.format("User with name %s not found in db", email));
+            throw new UsernameNotFoundException(String.format("User with name %s not found in db", email));
+        } else {
+            log.info(String.format("User with name %s found in db", email));
+        }
+        Collection<SimpleGrantedAuthority> authorities =  new ArrayList<>();
+        user.getRoles().forEach(role -> {
+            authorities.add(new SimpleGrantedAuthority(role.getName().toString()));
+        });
+        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
     }
 }

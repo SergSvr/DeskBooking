@@ -1,8 +1,8 @@
 package com.education.booking.model.entity;
 
 
+import com.education.booking.model.enums.Role;
 import com.education.booking.model.enums.Status;
-import com.education.booking.model.enums.UserType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 
 @Getter
 @Setter
@@ -24,17 +24,18 @@ public class User {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     Long id;
 
-    String login;
     String email;
     String password;
-    String hash;
     String name;
     String position;
     @Enumerated(EnumType.STRING)
     Status status;
 
-    @Enumerated(EnumType.STRING)
-    UserType type;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Collection<Role> roles = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", updatable = false)

@@ -1,6 +1,7 @@
 package com.education.booking.model.entity;
 
 import com.education.booking.model.enums.Status;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @Setter
@@ -34,6 +36,14 @@ public class Booking {
 
     @Column(name = "booking_date")
     LocalDateTime bookingDate;
+
+    @JsonFormat(pattern = "HH:mm:ss")
+    @Column(name = "start_time")
+    private LocalTime startTime;
+
+    @JsonFormat(pattern = "HH:mm:ss")
+    @Column(name = "end_time")
+    private LocalTime endTime;
 
     @ManyToOne
     @MapsId

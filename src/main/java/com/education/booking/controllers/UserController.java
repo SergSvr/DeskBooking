@@ -4,35 +4,31 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.education.booking.exceptions.CustomException;
 import com.education.booking.model.entity.User;
 import com.education.booking.model.enums.Role;
 import com.education.booking.service.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.education.booking.filter.CustomAuthorizationFilter.readServletCookie;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 public class UserController {
-    private static UserService userService;
+    private final UserService userService;
 
     @GetMapping(value="/login")
     public ModelAndView showLoginPage(ModelMap model){
@@ -48,10 +44,9 @@ public class UserController {
 
     @GetMapping("/token/refresh")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String authorizationHeader = request.getHeader(AUTHORIZATION);
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+        String refreshToken = readServletCookie(request, "refresh_token");
+        if (!refreshToken.equals("none")) {
             try {
-                String refreshToken = authorizationHeader.substring("Bearer ".length());
                 Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
                 JWTVerifier jwtVerifier = JWT.require(algorithm).build();
                 DecodedJWT decodedJWT = jwtVerifier.verify(refreshToken);
@@ -61,25 +56,34 @@ public class UserController {
                         .withSubject(user.getEmail())
                         .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 1000))
                         .withIssuer(request.getRequestURL().toString())
-                        .withClaim("roles", user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
+                        .withClaim("roles", user
+                                .getRoles()
+                                .stream()
+                                .map(Role::getName)
+                                .map(Enum::name)
+                                .collect(Collectors.toList()))
                         .sign(algorithm);
 
-                Map<String, String> tokens = new HashMap<>();
-                tokens.put("access_token", accessToken);
-                tokens.put("refresh_token", refreshToken);
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                new ObjectMapper().writeValue(response.getOutputStream(), tokens);
+                Cookie c1 = new Cookie("access_token", accessToken);
+                c1.setSecure(false);
+                c1.setDomain("127.0.0.1");
+                c1.setPath("/");
+                Cookie c2 = new Cookie("refresh_token", refreshToken);
+                c2.setSecure(false);
+                c2.setDomain("127.0.0.1");
+                c2.setPath("/");
+                response.addCookie(c1);
+                response.addCookie(c2);
+                response.sendRedirect( response.encodeRedirectURL("/index"));
+                log.info("Refreshed access_token"+accessToken);
             } catch (Exception e) {
-                response.setHeader("error", e.getMessage());
-                response.setStatus(FORBIDDEN.value());
-//                    response.sendError(FORBIDDEN.value());
-                Map<String, String> error = new HashMap<>();
-                error.put("error_message", e.getMessage());
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                new ObjectMapper().writeValue(response.getOutputStream(), error);
+                log.warn("Refresh token error"+e);
+                response.sendRedirect(response.encodeRedirectURL("/login"));
             }
         } else {
-            throw new CustomException("Refresh token is missing", HttpStatus.FORBIDDEN);
+            log.warn("Refresh token is missing");
+            response.sendRedirect( response.encodeRedirectURL("/login"));
+            //throw new CustomException("Refresh token is missing", HttpStatus.FORBIDDEN);
         }
     }
 

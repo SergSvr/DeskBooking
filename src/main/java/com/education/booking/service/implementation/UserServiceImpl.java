@@ -16,6 +16,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.mail.internet.InternetAddress;
@@ -29,10 +30,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserRepository userRepository;
     private final RoleRepo roleRepo;
     private final ObjectMapper mapper;
-
+    private final PasswordEncoder passwordEncoder;
 
     public void createUser(UserDTO userDTO) {
-        if (userDTO.getPassword().length() < 8) {
+        if (userDTO.getPassword()==null || userDTO.getPassword().length() < 8) {
             log.error("[Create User] Password is not valid" + userDTO);
             throw new CustomException("Пароль должен быть больше 7 символов", HttpStatus.BAD_REQUEST);
         }
@@ -51,6 +52,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         );
         User user = mapper.convertValue(userDTO, User.class);
         user.setStatus(Status.A);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         Role role = roleRepo.findByName("ROLE_USER");
         user.getRoles().add(role);
         User save = userRepository.save(user);
@@ -76,17 +78,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             log.error("[Change password] Invalid current password" + userDTO);
             throw new CustomException("Текущий пароль неверный", HttpStatus.BAD_REQUEST);
         }
-        user.setPassword(userDTO.getPassword());
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         User save = userRepository.save(user);
         log.info("[Saved] " + save);
     }
-
-    /*public void changeRole(Long id, UserType userType) {
-        User user = getUser(id);
-        user.setType(userType);
-        User save=userRepository.save(user);
-        log.info("[Saved] Role change " + save);
-    }*/
 
     @Override
     public Role saveRole(Role role) {
@@ -108,12 +103,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 }
         );
     }
-//    @Override
-//    public UserDTO saveUser(UserDTO userDTO) {
-//        log.info("Saving a new user {} to db", user.getUsername());
-//       user.setPassword(passwordEncoder.encode(user.getPassword()));
-//       return userRepo.save(user);
-//    }
 
     public UserDTO getUserDTO(Long id) {
         User user = userRepository.findById(id).orElseThrow(

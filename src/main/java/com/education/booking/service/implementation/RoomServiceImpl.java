@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -46,6 +48,13 @@ public class RoomServiceImpl implements RoomService {
                 findByIdAndStatus(id, Status.A).
                 orElseThrow(() -> new CustomException("Водитель с таким email не найден", HttpStatus.NOT_FOUND));
     }
+
+    @Override
+    public List<Room> getRooms() {
+        return roomRepository.
+                findAllByStatus(Status.A);
+    }
+
     @Override
     public RoomDTO update(Long id, RoomDTO roomDTO){
         Room room=getRoom(id);

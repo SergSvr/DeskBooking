@@ -1,4 +1,4 @@
-<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!doctype html>
 <html lang="en">
 <head>
@@ -19,19 +19,27 @@
 <body>
 <jsp:include page="navbar.jsp" />
 
-
 <main role="main" class="container">
 
-    <div class="starter-template">
-        <% if (request.getAttribute("name")!=null) { %>
-        <p> Welcome ${name}!!!</p>
-        <% } else { %>
-        <p> Welcome guest!!!</p>
-        <% } %>
+    <div align="center">
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+            <c:forEach var="i" items="${rooms}">
+                <tr>
+                    <td><c:out value="${i.number}" /></td>
+                    <td><c:out value="${i.floor}" /></td>
+                    <td><c:out value="${i.name}" /></td>
+                </tr>
+            </c:forEach>
+
+
+        </table>
     </div>
-    <sec:authorize access="hasAnyRole('ROLE_USER', 'DEVELOPER')">
-        <p> Welcome auth!!!</p>
-    </sec:authorize>
+
 </main><!-- /.container -->
 
 <!-- Bootstrap core JavaScript

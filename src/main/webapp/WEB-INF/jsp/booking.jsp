@@ -1,4 +1,3 @@
-<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!doctype html>
 <html lang="en">
 <head>
@@ -19,7 +18,6 @@
 <body>
 <jsp:include page="navbar.jsp" />
 
-
 <main role="main" class="container">
 
     <div class="starter-template">
@@ -29,9 +27,7 @@
         <p> Welcome guest!!!</p>
         <% } %>
     </div>
-    <sec:authorize access="hasAnyRole('ROLE_USER', 'DEVELOPER')">
-        <p> Welcome auth!!!</p>
-    </sec:authorize>
+
 </main><!-- /.container -->
 
 <!-- Bootstrap core JavaScript

@@ -1,5 +1,8 @@
 package com.education.booking;
 
+import com.education.booking.model.entity.Role;
+import com.education.booking.service.UserService;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -17,13 +20,13 @@ public class BookingApplication {
         return new BCryptPasswordEncoder();
     }
 
-  /*  @Bean
-    public CommandLineRunner run(UserService userService) {
-        return args -> {
-            userService.saveRole(new Role(null, ROLE_USER));
-            userService.saveRole(new Role(null, ROLE_MODERATOR));
-            userService.saveRole(new Role(null, ROLE_ADMIN));
-        };
-    }*/
+//    @Bean
+//    public CommandLineRunner run(UserService userService) {
+//        return args -> {
+//            userService.saveRole(new Role(null, "ROLE_USER"));
+//            userService.saveRole(new Role(null, "ROLE_MODERATOR"));
+//            userService.saveRole(new Role(null, "ROLE_ADMIN"));
+//        };
+//    }
 
 }

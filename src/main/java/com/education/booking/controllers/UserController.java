@@ -5,7 +5,6 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.education.booking.filter.CustomAuthenticationFilter;
-import com.education.booking.model.dto.DeskDTO;
 import com.education.booking.model.dto.UserDTO;
 import com.education.booking.model.entity.User;
 import com.education.booking.model.entity.Role;
@@ -16,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,14 +33,18 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping(value = "/login")
-    public ModelAndView showLoginPage(ModelMap model) {
-        ModelAndView mav = new ModelAndView("login");
-        return mav;
+    public ModelAndView showLoginPage() {
+               return new ModelAndView("login");
     }
 
-    @GetMapping(value = "/index")
+
+    @GetMapping(value = {"/index", "/"})
     public ModelAndView showIndexPage(Authentication authentication, ModelMap model) {
-        model.addAttribute("name", authentication.getName());
+        if (authentication != null) {
+            model.addAttribute("name", authentication.getName());
+            if (authentication.getAuthorities().toString().contains("ROLE_ADMIN"))
+                model.addAttribute("role", "admin");
+        }
         return new ModelAndView("index");
     }
 
@@ -51,9 +55,10 @@ public class UserController {
 
     @PostMapping(value = "/register")
     public ModelAndView register(@ModelAttribute UserDTO userDTO) {
-        log.warn(userDTO.getEmail());
-        userService.createUser(userDTO);
-        return new ModelAndView("register");
+        if (userDTO != null)
+            userService.createUser(userDTO);
+
+        return new ModelAndView("login");
     }
 
     @GetMapping("/token/refresh")
@@ -68,7 +73,7 @@ public class UserController {
                 User user = userService.getUser(email);
                 String accessToken = JWT.create()
                         .withSubject(user.getEmail())
-                        .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 1000))
+                        .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 100000))
                         .withIssuer(request.getRequestURL().toString())
                         .withClaim("roles", user
                                 .getRoles()

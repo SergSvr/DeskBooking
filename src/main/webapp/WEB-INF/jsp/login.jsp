@@ -10,6 +10,7 @@
     <link href="/signin.css" rel="stylesheet"/>
 </head>
 <body>
+<jsp:include page="navbar.jsp" />
 <div class="container">
 
     <form class="form-signin" method="post" action="/api/login">

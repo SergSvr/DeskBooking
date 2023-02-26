@@ -3,7 +3,7 @@ package com.education.booking.service.implementation;
 import com.education.booking.exceptions.CustomException;
 import com.education.booking.model.dto.UserDTO;
 import com.education.booking.model.entity.User;
-import com.education.booking.model.enums.Role;
+import com.education.booking.model.entity.Role;
 import com.education.booking.model.enums.Status;
 import com.education.booking.model.repository.RoleRepo;
 import com.education.booking.model.repository.UserRepository;
@@ -108,6 +108,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 }
         );
     }
+//    @Override
+//    public UserDTO saveUser(UserDTO userDTO) {
+//        log.info("Saving a new user {} to db", user.getUsername());
+//       user.setPassword(passwordEncoder.encode(user.getPassword()));
+//       return userRepo.save(user);
+//    }
 
     public UserDTO getUserDTO(Long id) {
         User user = userRepository.findById(id).orElseThrow(
@@ -134,4 +140,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         });
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
     }
+
+
 }

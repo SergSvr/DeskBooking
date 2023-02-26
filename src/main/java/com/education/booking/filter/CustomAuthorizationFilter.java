@@ -4,9 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,11 +38,11 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     String[] roles = decodedJWT.getClaim("roles").asArray(String.class);
                     Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
                     stream(roles).forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
-
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(username, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     filterChain.doFilter(request, response);
+                    log.warn("doFilterInternal: "+username );
                 } catch (Exception e) {
                     log.error("Some error: " + e.getMessage());
                     Cookie readCookie;
@@ -56,9 +54,6 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                         }
                     }
                     response.sendRedirect(response.encodeRedirectURL("/login"));
-//                    response.setHeader("error", e.getMessage());
-//                   // response.sendRedirect(response.encodeRedirectURL("/token/refresh"));
-//                    filterChain.doFilter(request, response);
                 }
             } else {
                 filterChain.doFilter(request, response);

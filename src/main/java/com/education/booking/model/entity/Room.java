@@ -1,5 +1,7 @@
 package com.education.booking.model.entity;
 
+import com.education.booking.model.enums.Status;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,11 +21,13 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "room", orphanRemoval = true, cascade = CascadeType.MERGE)
+    @JsonManagedReference(value="room_desks")
     List<Desk> desks;
 
     Long number;
     int floor;
-
     String name;
+    @Enumerated(EnumType.STRING)
+    Status status;
 }

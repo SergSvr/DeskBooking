@@ -1,14 +1,9 @@
 package com.education.booking;
 
-import com.education.booking.model.enums.Role;
-import com.education.booking.service.UserService;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import static com.education.booking.model.enums.ERole.*;
 
 @SpringBootApplication
 public class BookingApplication {

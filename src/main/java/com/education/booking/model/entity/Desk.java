@@ -1,14 +1,14 @@
 package com.education.booking.model.entity;
 
+import com.education.booking.model.enums.Status;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.OnDelete;
 
 import javax.persistence.*;
-import java.awt.print.Book;
 import java.util.List;
 
 @Getter
@@ -21,16 +21,18 @@ public class Desk {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
+    Long number;
     String label;
 
-    Long x;
-    Long y;
-
-    @OneToMany(mappedBy = "desk",cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "desk", orphanRemoval = true)
+    @JsonManagedReference(value="desk_bookings")
     List<Booking> booking;
 
-    @ManyToOne
-    @MapsId
+    @ManyToOne(optional = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
+    @JsonBackReference(value="room_desks")
     Room room;
+
+    @Enumerated(EnumType.STRING)
+    Status status;
 }

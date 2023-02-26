@@ -1,6 +1,6 @@
 package com.education.booking.model.repository;
 
-import com.education.booking.model.enums.Role;
+import com.education.booking.model.entity.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

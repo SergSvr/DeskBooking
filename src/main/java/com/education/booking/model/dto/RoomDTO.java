@@ -8,9 +8,8 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserDTO {
-    String email;
-    String password;
+public class RoomDTO {
+    Long number;
+    int floor;
     String name;
-    String position;
 }

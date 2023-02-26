@@ -14,7 +14,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,12 +42,11 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         } catch (Exception e) {
             response.sendRedirect(response.encodeRedirectURL("/login?err=f"));
         }
-        ;
         return null;
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException {
         User user = (User) authentication.getPrincipal();
         Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
         String accessToken = JWT.create()
@@ -57,12 +55,16 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
                 .withIssuer(request.getRequestURL().toString())
                 .withClaim("roles", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .sign(algorithm);
-
         String refreshToken = JWT.create()
                 .withSubject(user.getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis() + 30 * 60 * 1000))
                 .withIssuer(request.getRequestURL().toString())
                 .sign(algorithm);
+        setCookies(response, accessToken, refreshToken);
+        log.info("access_token" + accessToken);
+    }
+
+    public static void setCookies(HttpServletResponse response, String accessToken, String refreshToken) throws IOException {
         Cookie c1 = new Cookie("access_token", accessToken);
         c1.setSecure(false);
         c1.setDomain("127.0.0.1");
@@ -74,11 +76,10 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         response.addCookie(c1);
         response.addCookie(c2);
         response.sendRedirect(response.encodeRedirectURL("/index"));
-        log.info("access_token" + accessToken);
     }
 
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed){
         SecurityContextHolder.clearContext();
         log.warn("Failed to process authentication request" + failed);
     }

@@ -1,6 +1,5 @@
 package com.education.booking.model.dto;
 
-import com.education.booking.model.entity.Room;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,5 +11,6 @@ import lombok.experimental.FieldDefaults;
 public class DeskDTO {
     String label;
     Long number;
-    Room room;
+    Long roomNumber;
+    Long id;
 }

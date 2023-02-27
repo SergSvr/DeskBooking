@@ -24,32 +24,35 @@
     <div align="center">
         <table border="1" cellpadding="5">
             <tr>
-                <th>Floor</th>
-                <th>Number</th>
-                <th>Room Name</th>
+                <th>Room</th>
+                <th>Desk number</th>
+                <th>Desk label</th>
                 <th>Delete</th>
             </tr>
-            <c:forEach var="i" items="${rooms}">
+            <c:forEach var="i" items="${desks}">
                 <tr>
-                    <td><c:out value="${i.floor}" /></td>
+                    <td><c:out value="${i.roomNumber}" /></td>
                     <td><c:out value="${i.number}" /></td>
-                    <td><c:out value="${i.name}" /></td>
-                    <td><a href="/room/delete?id=${i.id}">Delete</a></td>
+                    <td><c:out value="${i.label}" /></td>
+                    <td><a href="/desk/delete?id=${i.id}">Delete</a></td>
                 </tr>
             </c:forEach>
         </table>
         </br>
-        <h3>Create Room</h3>
-        <form class="form" method="post" action="/room">
-            <input type="text" id="floor" name="floor" placeholder="Room Floor" required autofocus>
-            <input type="text" id="number" name="number" placeholder="Room Number" required autofocus>
-            <input type="text" id="name" name="name" placeholder="Room Name" required autofocus>
-            <button class="btn" type="submit">Create Room</button>
+        <h3>Create Desk</h3>
+        <form method="post"  action="/desk">
+            <select class="form-select" aria-label="Room Number" name="roomNumber" id="roomNumber" aria-label="Default select example">
+                <c:forEach var="i" items="${rooms}">
+                    <option value="${i.number}">${i.number}</option>
+                </c:forEach>
+            </select>
+            <input type="text" id="number" name="number" placeholder="Desk Number" required autofocus>
+            <input type="text" id="label" name="label" placeholder="Desk label(optional)"  autofocus>
+            <button class="btn" type="submit">Create Desk</button>
         </form>
         <c:out value="${result}" />
         <c:out value="${error}" />
     </div>
-
 </main><!-- /.container -->
 
 <!-- Bootstrap core JavaScript

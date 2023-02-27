@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,21 +32,19 @@ public class DeskServiceImpl implements DeskService {
     @Override
     @Transactional
     public DeskDTO createDesk(DeskDTO deskDTO) {
-        if (deskDTO.getRoom()==null)
-            throw new CustomException("Не указана комната для стола", HttpStatus.BAD_REQUEST);
-        deskRepository.findByNumberAndStatusAndRoom(deskDTO.getNumber(), Status.A, deskDTO.getRoom()).ifPresent(
-                driver -> {
-                    throw new CustomException("Стол уже существует", HttpStatus.BAD_REQUEST);
+        if (deskDTO.getRoomNumber() == null)
+            throw new CustomException("Room number was not set", HttpStatus.BAD_REQUEST);
+        Room room = roomService.getRoomsByNumber(deskDTO.getRoomNumber());
+        deskRepository.findByNumberAndStatusAndRoom(deskDTO.getNumber(), Status.A, room).ifPresent(
+                desk -> {
+                    throw new CustomException("Desk already exists", HttpStatus.BAD_REQUEST);
                 }
         );
         Desk desk = new Desk();
         desk.setNumber(deskDTO.getNumber());
         desk.setLabel(deskDTO.getLabel());
         desk.setStatus(Status.A);
-        Room room=roomService.getRoom(deskDTO.getRoom().getId());
         desk.setRoom(room);
-        room.getDesks().add(desk);
-        roomRepository.save(room);
         Desk save = deskRepository.save(desk);
         return mapper.convertValue(save, DeskDTO.class);
     }
@@ -61,7 +61,7 @@ public class DeskServiceImpl implements DeskService {
     public Desk getDesk(Long id) {
         return deskRepository.
                 findByIdAndStatus(id, Status.A).
-                orElseThrow(() -> new CustomException("Стол с таким id не найден", HttpStatus.NOT_FOUND));
+                orElseThrow(() -> new CustomException("Desk with id is not found", HttpStatus.NOT_FOUND));
     }
 
     @Override
@@ -81,5 +81,25 @@ public class DeskServiceImpl implements DeskService {
         roomRepository.save(room);
         Desk save = deskRepository.save(desk);
         return mapper.convertValue(save, DeskDTO.class);
+    }
+
+    @Override
+    @Transactional
+    public List<DeskDTO> getDesks() {
+        return deskRepository.findAllByStatusOrderByRoomDesc(Status.A)
+                .stream()
+                .map(h ->
+                {
+                    DeskDTO deskDTO = new DeskDTO();
+                    deskDTO.setRoomNumber(h
+                            .getRoom()
+                            .getNumber()
+                    );
+                    deskDTO.setLabel(h.getLabel());
+                    deskDTO.setId(h.getId());
+                    deskDTO.setNumber(h.getNumber());
+                    return deskDTO;
+                })
+                .collect(Collectors.toList());
     }
 }

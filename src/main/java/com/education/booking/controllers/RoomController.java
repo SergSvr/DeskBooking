@@ -1,5 +1,6 @@
 package com.education.booking.controllers;
 
+import com.education.booking.exceptions.CustomException;
 import com.education.booking.model.dto.RoomDTO;
 import com.education.booking.model.entity.Room;
 import com.education.booking.service.RoomService;
@@ -10,7 +11,6 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -21,41 +21,34 @@ import java.util.List;
 public class RoomController {
     private final RoomService roomService;
 
-    @PostMapping
-    @Operation(summary = "создать комнату")
-    public RoomDTO createRoom(@ModelAttribute RoomDTO roomDTO) {
-        return roomService.createRoom(roomDTO);
+    @ExceptionHandler(CustomException.class)
+    public ModelAndView handler(CustomException exception){
+        ModelMap model=new ModelMap();
+        model.put("error", exception.getMessage());
+        return getRooms(model);
     }
 
-//    @PutMapping
-//    @Operation(summary = "обновить сервисную запись")
-//    public ResponseEntity<ServiceRecord> updateRecord(@RequestBody ServiceRecord serviceRecord) {
-//        return ResponseEntity.ok(servRecService.update(serviceRecord));
-//    }
-//
-//
+    @PostMapping
+    @Operation(summary = "создать комнату")
+    public ModelAndView createRoom(@ModelAttribute RoomDTO roomDTO, ModelMap model) {
+        model.put("result", roomService.createRoom(roomDTO));
+        return getRooms(model);
+    }
+
     @GetMapping
     @Operation(summary = "получить список комнат")
     public ModelAndView getRooms(ModelMap model) {
-        List<Room> rooms=roomService.getRooms();
-        model.put("rooms",rooms);
+        List<Room> rooms = roomService.getRooms();
+        model.put("rooms", rooms);
         return new ModelAndView("room", model);
     }
-//
-//@GetMapping
-//@Operation(summary = "получить список комнат")
-//public ModelAndView getRooms(ModelAndView model) {
-//    List<Room> rooms=roomService.getRooms();
-//    model.setViewName("room");
-//    model.addObject("rooms",rooms);
-//    return model;
-//}
-//
-//    @DeleteMapping
-//    @Operation(summary = "удалить сервисную запись")
-//    public ResponseEntity<HttpStatus> deleteRecord(@RequestParam Long id) {
-//        servRecService.delete(id);
-//        return ResponseEntity.ok().build();
-//    }
+
+    @GetMapping("/delete")
+    @Operation(summary = "удалить комнату")
+    public ModelAndView deleteRoom(@RequestParam Long id, ModelMap model) {
+        roomService.deleteRoom(id);
+        return getRooms(model);
+    }
+
 
 }

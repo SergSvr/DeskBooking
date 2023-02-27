@@ -10,9 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long> {
-    Optional<Room> findByFloorAndNumberAndStatus(int floor, Long number, Status status);
+    Optional<Room> findByNumberAndStatus(Long number, Status status);
 
     Optional<Room> findByIdAndStatus(Long id, Status status);
 
-    List<Room> findAllByStatus(Status status);
+    List<Room> findAllByStatusOrderByFloorDesc(Status status);
 }

@@ -22,9 +22,9 @@ public class RoomServiceImpl implements RoomService {
     private final ObjectMapper mapper;
     @Override
     public RoomDTO createRoom(RoomDTO roomDTO) {
-        roomRepository.findByFloorAndNumberAndStatus(roomDTO.getFloor(),roomDTO.getNumber(),Status.A).ifPresent(
-                driver -> {
-                    throw new CustomException("Комната уже существует", HttpStatus.BAD_REQUEST);
+        roomRepository.findByNumberAndStatus(roomDTO.getNumber(),Status.A).ifPresent(
+                room -> {
+                    throw new CustomException("Room already exists", HttpStatus.BAD_REQUEST);
                 }
         );
         Room room=new Room();
@@ -46,14 +46,20 @@ public class RoomServiceImpl implements RoomService {
     public Room getRoom(Long id) {
         return roomRepository.
                 findByIdAndStatus(id, Status.A).
-                orElseThrow(() -> new CustomException("Водитель с таким email не найден", HttpStatus.NOT_FOUND));
+                orElseThrow(() -> new CustomException("Selected room not found", HttpStatus.NOT_FOUND));
     }
 
     @Override
     public List<Room> getRooms() {
         return roomRepository.
-                findAllByStatus(Status.A);
+                findAllByStatusOrderByFloorDesc(Status.A);
     }
+    @Override
+    public Room getRoomsByNumber(Long id) {
+        return roomRepository.
+                findByNumberAndStatus(id, Status.A).orElseThrow(() -> new CustomException("Selected room not found", HttpStatus.NOT_FOUND));
+    }
+
 
     @Override
     public RoomDTO update(Long id, RoomDTO roomDTO){

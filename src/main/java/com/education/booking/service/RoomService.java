@@ -15,5 +15,7 @@ public interface RoomService {
 
     List<Room> getRooms();
 
+    Room getRoomsByNumber(Long id);
+
     RoomDTO update(Long id, RoomDTO roomDTO);
 }

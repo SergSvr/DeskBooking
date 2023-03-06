@@ -25,7 +25,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (request.getServletPath().equals("/api/login") || request.getServletPath().equals("/api/token/refresh") || request.getServletPath().equals("/api/logout")) {
+        if (request.getServletPath().equals("/api/login") || request.getServletPath().equals("/api/token/refresh")||request.getServletPath().equals("/logout")) {
             filterChain.doFilter(request, response);
         } else {
             String token = readServletCookie(request, "access_token");
@@ -42,17 +42,10 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                             new UsernamePasswordAuthenticationToken(username, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     filterChain.doFilter(request, response);
-                    log.warn("doFilterInternal: "+username );
+                    log.warn("doFilterInternal: " + username);
                 } catch (Exception e) {
                     log.error("Some error: " + e.getMessage());
-                    Cookie readCookie;
-                    for (Cookie cookie : request.getCookies()) {
-                        if (cookie.getName().contains("token")) {
-                            readCookie = cookie;
-                            readCookie.setMaxAge(0);
-                            response.addCookie(readCookie);
-                        }
-                    }
+                    clearCookie(request, response);
                     response.sendRedirect(response.encodeRedirectURL("/login"));
                 }
             } else {
@@ -69,5 +62,16 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     .findAny().orElse("none");
         else
             return "none";
+    }
+
+    public static void clearCookie(HttpServletRequest request, HttpServletResponse response) {
+        Cookie readCookie;
+        for (Cookie cookie : request.getCookies()) {
+            if (cookie.getName().contains("token")) {
+                readCookie = cookie;
+                readCookie.setMaxAge(0);
+                response.addCookie(readCookie);
+            }
+        }
     }
 }

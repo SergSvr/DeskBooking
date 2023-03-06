@@ -7,6 +7,7 @@ import com.education.booking.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -25,19 +26,19 @@ public class RoomController {
     public ModelAndView handler(CustomException exception){
         ModelMap model=new ModelMap();
         model.put("error", exception.getMessage());
-        return getRooms(model);
+        return getRooms(null,model);
     }
 
     @PostMapping
     @Operation(summary = "создать комнату")
     public ModelAndView createRoom(@ModelAttribute RoomDTO roomDTO, ModelMap model) {
         model.put("result", roomService.createRoom(roomDTO));
-        return getRooms(model);
+        return getRooms(null,model);
     }
 
     @GetMapping
     @Operation(summary = "получить список комнат")
-    public ModelAndView getRooms(ModelMap model) {
+    public ModelAndView getRooms(Authentication authentication, ModelMap model) {
         List<Room> rooms = roomService.getRooms();
         model.put("rooms", rooms);
         return new ModelAndView("room", model);
@@ -47,7 +48,7 @@ public class RoomController {
     @Operation(summary = "удалить комнату")
     public ModelAndView deleteRoom(@RequestParam Long id, ModelMap model) {
         roomService.deleteRoom(id);
-        return getRooms(model);
+        return getRooms(null,model);
     }
 
 

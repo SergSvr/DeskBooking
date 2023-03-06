@@ -69,10 +69,12 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         c1.setSecure(false);
         c1.setDomain("127.0.0.1");
         c1.setPath("/");
+        c1.setMaxAge( 30 * 60 * 1000);
         Cookie c2 = new Cookie("refresh_token", refreshToken);
         c2.setSecure(false);
         c2.setDomain("127.0.0.1");
         c2.setPath("/");
+        c2.setMaxAge( 30 * 60 * 1000);
         response.addCookie(c1);
         response.addCookie(c2);
         response.sendRedirect(response.encodeRedirectURL("/index"));

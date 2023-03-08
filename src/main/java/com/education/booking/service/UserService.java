@@ -9,5 +9,7 @@ public interface UserService {
 
     User getUser(String email);
 
+    void changeProfile(UserDTO userDTO);
+
     Role saveRole(Role role);
 }

@@ -11,6 +11,7 @@ import com.education.booking.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.query.criteria.internal.expression.function.CurrentTimestampFunction;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.mail.internet.InternetAddress;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -32,8 +34,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final ObjectMapper mapper;
     private final PasswordEncoder passwordEncoder;
 
+    User cloneUser (User user){
+        User newUser = new User();
+        newUser.setEmail(user.getEmail());
+        return newUser;
+    }
+
     public void createUser(UserDTO userDTO) {
-        if (userDTO.getPassword()==null || userDTO.getPassword().length() < 8) {
+        if (userDTO.getPassword() == null || userDTO.getPassword().length() < 8) {
             log.error("[Create User] Password is not valid" + userDTO);
             throw new CustomException("Пароль должен быть больше 7 символов", HttpStatus.BAD_REQUEST);
         }
@@ -66,19 +74,32 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 orElseThrow(() -> new CustomException("Пользователь с таким email не найден", HttpStatus.NOT_FOUND));
     }
 
-    public void changePassword(UserDTO userDTO) {
-        if (userDTO.getPassword().length() < 8)
-            throw new CustomException("Пароль должен быть больше 7 символов", HttpStatus.BAD_REQUEST);
+    @Override
+    public void changeProfile(UserDTO userDTO) {
         User user = userRepository.findByEmail(userDTO.getEmail()).orElseThrow(
                 () -> {
                     log.error("[Change password] User not found" + userDTO);
                     throw new CustomException("Пользователь с таким email уже существует", HttpStatus.BAD_REQUEST);
                 });
-        if (user.getPassword().equals(userDTO.getPassword())) {
-            log.error("[Change password] Invalid current password" + userDTO);
-            throw new CustomException("Текущий пароль неверный", HttpStatus.BAD_REQUEST);
-        }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        //historical record
+        User newUser=new User();
+        newUser.setUpdatedAt(user.getUpdatedAt());
+        newUser.setCreatedAt(user.getCreatedAt());
+        newUser.setEmail(user.getEmail());
+        newUser.setPassword(user.getPassword());
+        newUser.setName(user.getName());
+        newUser.setPosition(user.getPosition());
+        newUser.setStatus(Status.I);
+        //-----------
+        if (userDTO.getPassword().length() < 8 && userDTO.getPassword().length() > 0)
+            throw new CustomException("Пароль должен быть больше 7 символов", HttpStatus.BAD_REQUEST);
+        else
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setUpdatedAt(LocalDateTime.now());
+        if (userDTO.getName().length()>0)
+            user.setName(userDTO.getName());
+        user.setPosition(userDTO.getEmail());
+        userRepository.save(newUser);
         User save = userRepository.save(user);
         log.info("[Saved] " + save);
     }
@@ -117,13 +138,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = getUser(email);
-        if(user == null) {
+        if (user == null) {
             log.error(String.format("User with name %s not found in db", email));
             throw new UsernameNotFoundException(String.format("User with name %s not found in db", email));
         } else {
             log.info(String.format("User with name %s found in db", email));
         }
-        Collection<SimpleGrantedAuthority> authorities =  new ArrayList<>();
+        Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
         user.getRoles().forEach(role -> {
             authorities.add(new SimpleGrantedAuthority(role.getName().toString()));
         });

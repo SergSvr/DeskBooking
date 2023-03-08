@@ -16,6 +16,8 @@ import org.springframework.web.servlet.ModelAndView;
 import java.time.LocalTime;
 import java.util.Date;
 
+import static com.education.booking.controllers.UserController.getUser;
+
 @RestController
 @RequestMapping("/bookings")
 @RequiredArgsConstructor
@@ -24,10 +26,10 @@ public class BookingController {
     private final BookingService bookingService;
 
     @ExceptionHandler(CustomException.class)
-    public ModelAndView handler(CustomException exception) {
+    public ModelAndView handler(CustomException exception,Authentication authentication) {
         ModelMap model = new ModelMap();
         model.put("error", exception.getMessage());
-        return getBooking(null, model);
+        return getBooking(authentication, model);
     }
 
     @PostMapping
@@ -60,6 +62,7 @@ public class BookingController {
         model.put("desks",desks);
         List<Room> rooms = roomService.getRooms();
         model.put("rooms", rooms);*/
+        getUser(authentication, model);
         return new ModelAndView("booking",model);
     }
 

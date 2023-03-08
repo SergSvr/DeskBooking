@@ -1,8 +1,6 @@
 package com.education.booking.filter;
 
-import com.education.booking.exceptions.CustomException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Service;
@@ -19,16 +17,16 @@ import static com.education.booking.filter.CustomAuthorizationFilter.clearCookie
 public class CustomLogoutFilter implements LogoutHandler {
 
 
-        @Override
-        public void logout(HttpServletRequest request, HttpServletResponse response,
-                           Authentication authentication) {
-                clearCookie(request,response);
-                try {
-                        response.sendRedirect("/index");
-                } catch (IOException e) {
-                        log.error("Logout error");
-                }
-                log.info("Logout process");
+    @Override
+    public void logout(HttpServletRequest request, HttpServletResponse response,
+                       Authentication authentication) {
+        clearCookie(request, response);
+        try {
+            response.sendRedirect("/index");
+        } catch (IOException e) {
+            log.error("Logout error");
         }
+        log.info("Logout process");
+    }
 
 }

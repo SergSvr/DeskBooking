@@ -47,12 +47,6 @@ public class UserController {
             return new ModelAndView("login");
     }
 
-//    @GetMapping(value = "/logout")
-//    public ModelAndView goLogout(Authentication authentication, ModelMap model) {
-//        return new ModelAndView("index");
-//    }
-
-
     @GetMapping(value = {"/index", "/"})
     public ModelAndView showIndexPage(Authentication authentication, ModelMap model) {
         getUser(authentication, model);
@@ -62,7 +56,10 @@ public class UserController {
     @GetMapping(value = "/register")
     public ModelAndView showRegisterPage(Authentication authentication, ModelMap model) {
         getUser(authentication, model);
-        return new ModelAndView("register");
+        if (model.getAttribute("name") != null)
+            return new ModelAndView("index");
+        else
+            return new ModelAndView("register");
     }
 
     @PostMapping(value = "/register")
@@ -70,6 +67,24 @@ public class UserController {
         if (userDTO != null)
             userService.createUser(userDTO);
         return new ModelAndView("login");
+    }
+
+    @GetMapping(value = "/profile")
+    public ModelAndView showProfile(Authentication authentication, ModelMap model) {
+        getUser(authentication, model);
+        if (model.getAttribute("name") != null)
+            return new ModelAndView("index");
+        else
+            return new ModelAndView("register");
+    }
+
+    @PostMapping(value = "/profile")
+    public ModelAndView updateProfile(@ModelAttribute UserDTO userDTO,Authentication authentication, ModelMap model) {
+        getUser(authentication, model);
+        if (model.getAttribute("email")!=userDTO.getEmail())
+            return new ModelAndView("index");
+        userService.changeProfile(userDTO);
+        return new ModelAndView("profile");
     }
 
     @GetMapping("/token/refresh")
@@ -105,7 +120,7 @@ public class UserController {
         }
     }
 
-    public ModelMap getUser(Authentication authentication, ModelMap model) {
+    public static ModelMap getUser(Authentication authentication, ModelMap model) {
         if (authentication != null) {
             model.addAttribute("name", authentication.getName());
             if (authentication.getAuthorities().toString().contains("ROLE_ADMIN"))

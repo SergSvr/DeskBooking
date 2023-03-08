@@ -8,14 +8,17 @@
         <ul class="navbar-nav mr-auto">
             <% if (request.getAttribute("name")!=null) { %>
             <li class="nav-item">
-                <a class="nav-link" href="/profile">Profile <span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="/profile">Profile</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/logout">Logout <span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="/logout">Logout</a>
             </li>
             <% } else { %>
             <li class="nav-item">
-                <a class="nav-link" href="/login">Login <span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="/login">Login</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/register">Register</a>
             </li>
             <% } %>
             <li class="nav-item">

@@ -14,6 +14,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 
+import static com.education.booking.controllers.UserController.getUser;
+
 
 @RestController
 @RequestMapping("/room")
@@ -23,22 +25,23 @@ public class RoomController {
     private final RoomService roomService;
 
     @ExceptionHandler(CustomException.class)
-    public ModelAndView handler(CustomException exception){
+    public ModelAndView handler(CustomException exception,Authentication authentication){
         ModelMap model=new ModelMap();
         model.put("error", exception.getMessage());
-        return getRooms(null,model);
+        return getRooms(authentication,model);
     }
 
     @PostMapping
     @Operation(summary = "создать комнату")
-    public ModelAndView createRoom(@ModelAttribute RoomDTO roomDTO, ModelMap model) {
+    public ModelAndView createRoom(@ModelAttribute RoomDTO roomDTO, Authentication authentication, ModelMap model) {
         model.put("result", roomService.createRoom(roomDTO));
-        return getRooms(null,model);
+        return getRooms(authentication,model);
     }
 
     @GetMapping
     @Operation(summary = "получить список комнат")
     public ModelAndView getRooms(Authentication authentication, ModelMap model) {
+        getUser(authentication, model);
         List<Room> rooms = roomService.getRooms();
         model.put("rooms", rooms);
         return new ModelAndView("room", model);
@@ -46,9 +49,9 @@ public class RoomController {
 
     @GetMapping("/delete")
     @Operation(summary = "удалить комнату")
-    public ModelAndView deleteRoom(@RequestParam Long id, ModelMap model) {
+    public ModelAndView deleteRoom(@RequestParam Long id, Authentication authentication, ModelMap model) {
         roomService.deleteRoom(id);
-        return getRooms(null,model);
+        return getRooms(authentication,model);
     }
 
 

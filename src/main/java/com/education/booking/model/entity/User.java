@@ -24,7 +24,6 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     Long id;
-
     String email;
     String password;
     String name;
@@ -44,7 +43,7 @@ public class User {
     LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.MERGE, orphanRemoval = true)
-    @JsonManagedReference(value="user_bookings")
+    @JsonManagedReference(value = "user_bookings")
     List<Booking> booking;
 
 }

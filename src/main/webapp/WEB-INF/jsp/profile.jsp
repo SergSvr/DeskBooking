@@ -1,8 +1,11 @@
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html; charset=UTF-8" language="java"%>
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8"/>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -22,15 +25,15 @@
 
 <main role="main" class="container">
 
-    <h3>Change Profile</h3>
-    <form class="form" method="post" action="/room">
-        <input type="text" id="floor" name="floor" placeholder="Room Floor" required autofocus>
-        <input type="text" id="number" name="number" placeholder="Room Number" required autofocus>
-        <input type="text" id="name" name="name" placeholder="Room Name" required autofocus>
-        <button class="btn" type="submit">Create Room</button>
+    <h3>Profile</h3>
+    <form class="form" method="post" action="/profile">
+        Email: ${user.email}<br/><br/>
+        Name: <input type="text" id="name" name="name" placeholder="" value="${user.name}" autofocus><br/><br/>
+        Password: <input type="text" id="password" name="password" placeholder="Edit to change" autofocus><br/><br/>
+        Position: <input type="text" id="position" name="position" placeholder="" value="${user.position}" autofocus><br/><br/>
+        <button class="btn" type="submit">Change profile</button>
     </form>
-    <c:out value="${result}"/>
-    <c:out value="${error}"/>
+    <div style="color: red"><c:out value="${error}"/></div>
 </main><!-- /.container -->
 
 <!-- Bootstrap core JavaScript

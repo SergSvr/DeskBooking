@@ -9,7 +9,9 @@ public interface UserService {
 
     User getUser(String email);
 
-    void changeProfile(UserDTO userDTO);
+    UserDTO getUserDTO(String email);
+
+    UserDTO changeProfile(UserDTO userDTO);
 
     Role saveRole(Role role);
 }

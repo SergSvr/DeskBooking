@@ -1,7 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
+<%@ page contentType="text/html; charset=UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ page contentType="text/html; charset=UTF-8" language="java"%>
+<!doctype html>
+<html>
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8"/>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -10,10 +15,9 @@
     <link href="/signin.css" rel="stylesheet"/>
 </head>
 <body>
-<jsp:include page="navbar.jsp" />
+<jsp:include page="navbar.jsp"/>
 <div class="container">
     <section>
-
         <div class="mask d-flex align-items-center h-100 gradient-custom-3">
             <div class="container h-100">
                 <div class="row d-flex justify-content-center align-items-center h-100">
@@ -23,19 +27,20 @@
                                 <h2 class="text-uppercase text-center mb-5">Create an account</h2>
 
                                 <form class="form-signup" method="post" action="/register">
-
+                                    <div style="color: red"><c:out value="${error}"/></div>
                                     <div class="form-outline mb-4">
-                                        <input type="text" id="name" name="name"  class="form-control form-control-lg"/>
+                                        <input type="text" id="name" name="name" class="form-control form-control-lg"/>
                                         <label class="form-label" for="name">Your Name</label>
                                     </div>
 
                                     <div class="form-outline mb-4">
-                                        <input type="text" id="email" name="email" class="form-control form-control-lg"/>
+                                        <input type="text" id="email" name="email"
+                                               class="form-control form-control-lg"/>
                                         <label class="form-label" for="email">Your Email</label>
                                     </div>
 
                                     <div class="form-outline mb-4">
-                                        <input type="text" id="position"  name="position"
+                                        <input type="text" id="position" name="position"
                                                class="form-control form-control-lg"/>
                                         <label class="form-label" for="position">Position</label>
                                     </div>
@@ -53,11 +58,12 @@
                                         </button>
                                     </div>
 
-                                    <p class="text-center text-muted mt-5 mb-0">Have already an account? <a href="/login"
-                                                                                                            class="fw-bold text-body"><u>Login
+                                    <p class="text-center text-muted mt-5 mb-0">Have already an account? <a
+                                            href="/login"
+                                            class="fw-bold text-body"><u>Login
                                         here</u></a></p>
-
                                 </form>
+
 
                             </div>
                         </div>

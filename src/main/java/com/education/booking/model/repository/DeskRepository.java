@@ -15,5 +15,6 @@ public interface DeskRepository extends JpaRepository<Desk, Long> {
 
     Optional<Desk> findByNumberAndStatusAndRoom(Long id, Status status, Room room);
 
+    Desk findByNumberAndStatus(Long number, Status status);
     List<Desk> findAllByStatusOrderByRoomDesc(Status status);
 }

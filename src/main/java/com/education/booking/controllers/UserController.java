@@ -6,12 +6,14 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.education.booking.exceptions.CustomException;
 import com.education.booking.filter.CustomAuthenticationFilter;
+import com.education.booking.model.dto.DeskDTO;
 import com.education.booking.model.dto.UserDTO;
 import com.education.booking.model.entity.Role;
 import com.education.booking.model.entity.User;
 import com.education.booking.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.education.booking.filter.CustomAuthorizationFilter.readServletCookie;
@@ -32,10 +36,15 @@ public class UserController {
     private final UserService userService;
 
     @ExceptionHandler(CustomException.class)
-    public ModelAndView handler(CustomException exception) {
+    public ModelAndView handler(Authentication authentication, CustomException exception) {
         ModelMap model = new ModelMap();
         model.put("error", exception.getMessage());
-        return showLoginPage(null, model);
+        if (Objects.equals(exception.getAction(), "create_user"))
+            return showRegisterPage(authentication, model);
+        else if (Objects.equals(exception.getAction(), "change_profile")) {
+            return showProfile(authentication, model);
+        }
+        return showLoginPage(authentication, model);
     }
 
     @GetMapping(value = "/login")
@@ -59,7 +68,7 @@ public class UserController {
         if (model.getAttribute("name") != null)
             return new ModelAndView("index");
         else
-            return new ModelAndView("register");
+            return new ModelAndView("register", model);
     }
 
     @PostMapping(value = "/register")
@@ -71,20 +80,27 @@ public class UserController {
 
     @GetMapping(value = "/profile")
     public ModelAndView showProfile(Authentication authentication, ModelMap model) {
-        getUser(authentication, model);
-        if (model.getAttribute("name") != null)
-            return new ModelAndView("index");
-        else
-            return new ModelAndView("register");
+        if (authentication.getName() != null) {
+            getUser(authentication, model);
+            UserDTO userDTO = userService
+                    .getUserDTO(authentication.getPrincipal().toString());
+            model.put("user", userDTO);
+            return new ModelAndView("profile", model);
+        }
+        log.warn("Unauthorized access!");
+        return new ModelAndView("register", model);
     }
 
     @PostMapping(value = "/profile")
-    public ModelAndView updateProfile(@ModelAttribute UserDTO userDTO,Authentication authentication, ModelMap model) {
+    public ModelAndView updateProfile(@ModelAttribute UserDTO userDTO, Authentication authentication, ModelMap model) {
         getUser(authentication, model);
-        if (model.getAttribute("email")!=userDTO.getEmail())
+        if (model.getAttribute("name") == null)
             return new ModelAndView("index");
-        userService.changeProfile(userDTO);
-        return new ModelAndView("profile");
+        else {
+            userDTO.setEmail(model.getAttribute("name").toString());
+            userService.changeProfile(userDTO);
+            return showProfile(authentication, model);
+        }
     }
 
     @GetMapping("/token/refresh")

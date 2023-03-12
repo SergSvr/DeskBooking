@@ -19,7 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.Duration;
+import java.time.LocalDate;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -32,34 +33,39 @@ public class BookingServiceImpl implements BookingService {
     public final DeskRepository deskRepository;
     public final UserRepository userRepository;
     private final ObjectMapper mapper;
+
     @Override
     @Transactional
-    public BookingDTO createBooking(BookingDTO bookingDTO, String mail, Long id) {
-        Desk desk=deskService.getDesk(id);
-        User user=userService.getUser(mail);
-        if (bookingDTO.getBookingDate()==null || bookingDTO.getStartTime()==null || bookingDTO.getEndTime()==null)
-            throw new CustomException("Не хватает данных для бронирования", HttpStatus.BAD_REQUEST);
-        bookingRepository.findAllByBookingDateAndStatusAndDesk(bookingDTO.getBookingDate(),Status.A, desk).forEach(
+    public BookingDTO createBooking(BookingDTO bookingDTO, String mail, Long number) {
+        Desk desk = deskService.getDeskByNumber(number);
+        User user = userService.getUser(mail);
+        if (desk == null || user == null || bookingDTO.getBookingDate() == null || bookingDTO.getStartTime() == null || bookingDTO.getEndTime() == null)
+            throw new CustomException("Не хватает данных для бронирования", "create_booking", HttpStatus.BAD_REQUEST);
+        if (bookingDTO.getEndTime().isBefore(bookingDTO.getStartTime()) || bookingDTO.getEndTime().compareTo(bookingDTO.getStartTime()) == 0) {
+            throw new CustomException("Некорректный временной интервал", "create_booking", HttpStatus.BAD_REQUEST);
+        }
+        bookingRepository.findAllByBookingDateAndStatusAndDesk(bookingDTO.getBookingDate(), Status.A, desk).forEach(
                 booking -> {
-                  if(Duration.between(booking.getStartTime(),bookingDTO.getEndTime()).toMinutes()<0
-                            || Duration.between(booking.getEndTime(),bookingDTO.getStartTime()).toMinutes()<0)
-                       throw new CustomException("Бронирование уже существует", HttpStatus.BAD_REQUEST);
+                    if (booking.getStartTime().isBefore(bookingDTO.getEndTime())
+                            &&
+                            booking.getEndTime().isAfter(bookingDTO.getStartTime()))
+                        throw new CustomException("Бронирование уже существует", "create_booking", HttpStatus.BAD_REQUEST);
                 }
         );
-        Booking booking=new Booking();
+        Booking booking = new Booking();
         booking.setBookingDate(bookingDTO.getBookingDate());
         booking.setStartTime(bookingDTO.getStartTime());
         booking.setEndTime(bookingDTO.getEndTime());
         booking.setDesk(desk);
         booking.setUser(user);
         booking.setStatus(Status.A);
-        Booking save=bookingRepository.save(booking);
-        return mapper.convertValue(save,BookingDTO.class);
+        Booking save = bookingRepository.save(booking);
+        return mapper.convertValue(save, BookingDTO.class);
     }
 
     @Override
-    public void deleteBooking(Long id){
-        Booking booking=getBooking(id);
+    public void deleteBooking(Long id) {
+        Booking booking = getBooking(id);
         booking.setStatus(Status.C);
         bookingRepository.save(booking);
     }
@@ -68,6 +74,12 @@ public class BookingServiceImpl implements BookingService {
     public Booking getBooking(Long id) {
         return bookingRepository.
                 findByIdAndStatus(id, Status.A).
-                orElseThrow(() -> new CustomException("Бронирование с таким id не найдено", HttpStatus.NOT_FOUND));
+                orElseThrow(() -> new CustomException("Бронирование с таким id не найдено", "get_booking", HttpStatus.NOT_FOUND));
+    }
+
+    @Override
+    @Transactional
+    public List<Booking> getBookings() {
+        return bookingRepository.findAllByBookingDateGreaterThanEqualAndStatus(LocalDate.now(), Status.A);
     }
 }

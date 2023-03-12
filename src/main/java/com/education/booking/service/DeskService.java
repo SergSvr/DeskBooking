@@ -13,6 +13,8 @@ public interface DeskService {
 
     Desk getDesk(Long id);
 
+    Desk getDeskByNumber(Long id);
+
     DeskDTO updateDesk(Long id, DeskDTO deskDTO);
 
     DeskDTO changeRoom(Long deskId, Long roomId);

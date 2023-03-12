@@ -24,7 +24,7 @@ public class RoomServiceImpl implements RoomService {
     public RoomDTO createRoom(RoomDTO roomDTO) {
         roomRepository.findByNumberAndStatus(roomDTO.getNumber(),Status.A).ifPresent(
                 room -> {
-                    throw new CustomException("Room already exists", HttpStatus.BAD_REQUEST);
+                    throw new CustomException("Room already exists","create_room", HttpStatus.BAD_REQUEST);
                 }
         );
         Room room=new Room();
@@ -46,7 +46,7 @@ public class RoomServiceImpl implements RoomService {
     public Room getRoom(Long id) {
         return roomRepository.
                 findByIdAndStatus(id, Status.A).
-                orElseThrow(() -> new CustomException("Selected room not found", HttpStatus.NOT_FOUND));
+                orElseThrow(() -> new CustomException("Selected room not found","get_room", HttpStatus.NOT_FOUND));
     }
 
     @Override
@@ -57,7 +57,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public Room getRoomsByNumber(Long id) {
         return roomRepository.
-                findByNumberAndStatus(id, Status.A).orElseThrow(() -> new CustomException("Selected room not found", HttpStatus.NOT_FOUND));
+                findByNumberAndStatus(id, Status.A).orElseThrow(() -> new CustomException("Selected room not found","get_room", HttpStatus.NOT_FOUND));
     }
 
 

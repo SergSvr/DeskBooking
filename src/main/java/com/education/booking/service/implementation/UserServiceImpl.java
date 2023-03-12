@@ -11,7 +11,6 @@ import com.education.booking.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.query.criteria.internal.expression.function.CurrentTimestampFunction;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,28 +33,23 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final ObjectMapper mapper;
     private final PasswordEncoder passwordEncoder;
 
-    User cloneUser (User user){
-        User newUser = new User();
-        newUser.setEmail(user.getEmail());
-        return newUser;
-    }
-
+    @Override
     public void createUser(UserDTO userDTO) {
         if (userDTO.getPassword() == null || userDTO.getPassword().length() < 8) {
             log.error("[Create User] Password is not valid" + userDTO);
-            throw new CustomException("Пароль должен быть больше 7 символов", HttpStatus.BAD_REQUEST);
+            throw new CustomException("Пароль должен быть больше 7 символов","create_user", HttpStatus.BAD_REQUEST);
         }
         try {
             InternetAddress emailAddr = new InternetAddress(userDTO.getEmail());
             emailAddr.validate();
         } catch (Exception ex) {
             log.error("[Create User] email is not valid" + userDTO);
-            throw new CustomException("Невалидный email", HttpStatus.BAD_REQUEST);
+            throw new CustomException("Невалидный email","create_user", HttpStatus.BAD_REQUEST);
         }
         userRepository.findByEmailAndStatus(userDTO.getEmail(), Status.A).ifPresent(
                 driver -> {
                     log.error("[Create User] User already existed" + userDTO);
-                    throw new CustomException("Пользователь с таким email уже существует", HttpStatus.BAD_REQUEST);
+                    throw new CustomException("Пользователь с таким email уже существует","create_user", HttpStatus.BAD_REQUEST);
                 }
         );
         User user = mapper.convertValue(userDTO, User.class);
@@ -71,18 +65,30 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public User getUser(String email) {
         return userRepository.
                 findByEmailAndStatus(email, Status.A).
-                orElseThrow(() -> new CustomException("Пользователь с таким email не найден", HttpStatus.NOT_FOUND));
+                orElseThrow(() -> new CustomException("Пользователь с таким email не найден","get_user", HttpStatus.NOT_FOUND));
     }
 
     @Override
-    public void changeProfile(UserDTO userDTO) {
-        User user = userRepository.findByEmail(userDTO.getEmail()).orElseThrow(
+    public UserDTO getUserDTO(String email) {
+        User user = userRepository.
+                findByEmailAndStatus(email, Status.A).
+                orElseThrow(() -> new CustomException("Пользователь с таким email не найден","get_user_dto", HttpStatus.NOT_FOUND));
+        UserDTO userDTO = new UserDTO();
+        userDTO.setEmail(user.getEmail());
+        userDTO.setName(user.getName());
+        userDTO.setPosition(user.getPosition());
+        return userDTO;
+    }
+
+    @Override
+    public UserDTO changeProfile(UserDTO userDTO) {
+        User user = userRepository.findByEmailAndStatus(userDTO.getEmail(), Status.A).orElseThrow(
                 () -> {
-                    log.error("[Change password] User not found" + userDTO);
-                    throw new CustomException("Пользователь с таким email уже существует", HttpStatus.BAD_REQUEST);
+                    log.error("[Change password] User not found " + userDTO);
+                    throw new CustomException("Пользователь с таким email уже существует","change_profile", HttpStatus.BAD_REQUEST);
                 });
         //historical record
-        User newUser=new User();
+        User newUser = new User();
         newUser.setUpdatedAt(user.getUpdatedAt());
         newUser.setCreatedAt(user.getCreatedAt());
         newUser.setEmail(user.getEmail());
@@ -91,17 +97,21 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         newUser.setPosition(user.getPosition());
         newUser.setStatus(Status.I);
         //-----------
-        if (userDTO.getPassword().length() < 8 && userDTO.getPassword().length() > 0)
-            throw new CustomException("Пароль должен быть больше 7 символов", HttpStatus.BAD_REQUEST);
-        else
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (userDTO.getPassword().length() < 8 && userDTO.getPassword().length() > 0) {
+            log.warn("Password lenght exception" + userDTO.getEmail());
+            throw new CustomException("Password must be 8 symbols or more ","change_profile", HttpStatus.BAD_REQUEST);
+        } else if (userDTO.getPassword().length() != 0)
+            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user.setUpdatedAt(LocalDateTime.now());
-        if (userDTO.getName().length()>0)
+        if (userDTO.getName().length() > 0)
             user.setName(userDTO.getName());
-        user.setPosition(userDTO.getEmail());
+        user.setPosition(userDTO.getPosition());
         userRepository.save(newUser);
         User save = userRepository.save(user);
+
+        //памагити
         log.info("[Saved] " + save);
+        return mapper.convertValue(save, UserDTO.class);
     }
 
     @Override
@@ -120,19 +130,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return userRepository.findById(id).orElseThrow(
                 () -> {
                     log.error("[Find User] User not found id=" + id);
-                    throw new CustomException("Пользователь с таким id не существует", HttpStatus.BAD_REQUEST);
+                    throw new CustomException("Пользователь с таким id не существует","get_user", HttpStatus.BAD_REQUEST);
                 }
         );
-    }
-
-    public UserDTO getUserDTO(Long id) {
-        User user = userRepository.findById(id).orElseThrow(
-                () -> {
-                    log.error("[Find User] User not found id=" + id);
-                    throw new CustomException("Пользователь с таким id не существует", HttpStatus.BAD_REQUEST);
-                }
-        );
-        return mapper.convertValue(user, UserDTO.class);
     }
 
     @Override

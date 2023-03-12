@@ -9,11 +9,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-
     <title>BookingApp</title>
     <!-- Bootstrap core CSS -->
     <link href="/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <!-- Custom styles for this template -->
     <link href="/starter-template.css" rel="stylesheet">
     <link href="/jquery.timepicker.css" rel="stylesheet"/>
@@ -45,12 +43,9 @@
             $.datepicker.setDefaults($.datepicker.regional['ru']);
         });
         $( function() {
-            $( "#date" ).datepicker();
-            $( "#date" ).datepicker( "option",$.datepicker.regional[ "ru"] );
-            $('#timeFrom').timepicker({ 'scrollDefault': 'now' });
-            $('#timeFrom').timepicker({ 'timeFormat': 'H:i' });
-            $('#timeTo').timepicker({ 'scrollDefault': 'now' });
-            $('#timeTo').timepicker({ 'timeFormat': 'H:i' });
+            $( "#date" ).datepicker().datepicker( "option",$.datepicker.regional[ "ru"] );
+            $("#timeFrom").timepicker({ 'scrollDefault': 'now','timeFormat': 'H:i' });
+            $("#timeTo").timepicker({ 'scrollDefault': 'now','timeFormat': 'H:i' });
         } );
     </script>
 </head>
@@ -94,13 +89,7 @@
     </div>
 
 
-</main><!-- /.container -->
-<script>$('#datepicker').datepicker('show');</script>
-<!-- Bootstrap core JavaScript
-================================================== -->
-<!-- Placed at the end of the document so the pages load faster -->
-
-
+</main>
 <script src="/js/popper.min.js"></script>
 <script src="/js/bootstrap.min.js"></script>
 </body>

@@ -1,8 +1,11 @@
 package com.education.booking.service;
 
 import com.education.booking.model.dto.BookingDTO;
+import com.education.booking.model.dto.DeskDTO;
 import com.education.booking.model.entity.Booking;
+import com.education.booking.model.entity.Desk;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 public interface BookingService {
@@ -13,4 +16,10 @@ public interface BookingService {
     Booking getBooking(Long id);
 
     List<Booking> getBookings();
+
+    @Transactional
+    List<Booking> getBookingsByUser(String mail);
+
+    @Transactional
+    List<DeskDTO> getAvailableDesks(BookingDTO bookingDTO);
 }

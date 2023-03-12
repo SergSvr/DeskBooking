@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager manager;
-
+    private static final int cookieTime=30 * 60 * 1000;
     public CustomAuthenticationFilter(AuthenticationManager manager) {
         this.manager = manager;
     }
@@ -51,13 +51,13 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
         String accessToken = JWT.create()
                 .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 1000))
+                .withExpiresAt(new Date(System.currentTimeMillis() + cookieTime))
                 .withIssuer(request.getRequestURL().toString())
                 .withClaim("roles", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .sign(algorithm);
         String refreshToken = JWT.create()
                 .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + 30 * 60 * 1000))
+                .withExpiresAt(new Date(System.currentTimeMillis() + cookieTime* 2L))
                 .withIssuer(request.getRequestURL().toString())
                 .sign(algorithm);
         setCookies(response, accessToken, refreshToken);
@@ -69,12 +69,12 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         c1.setSecure(false);
         c1.setDomain("127.0.0.1");
         c1.setPath("/");
-        c1.setMaxAge(30 * 60 * 1000);
+        c1.setMaxAge(cookieTime);
         Cookie c2 = new Cookie("refresh_token", refreshToken);
         c2.setSecure(false);
         c2.setDomain("127.0.0.1");
         c2.setPath("/");
-        c2.setMaxAge(30 * 60 * 1000);
+        c2.setMaxAge(cookieTime*2);
         response.addCookie(c1);
         response.addCookie(c2);
         response.sendRedirect(response.encodeRedirectURL("/index"));

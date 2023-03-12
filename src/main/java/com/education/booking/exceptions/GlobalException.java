@@ -36,7 +36,8 @@ public class GlobalException {
 
     @ExceptionHandler(CustomException.class)
     public void handleCustomException(HttpServletResponse response, CustomException ex) throws IOException {
-        response.sendError(ex.getStatus().value(), ex.getMessage());
+        log.error("unprocessed exception!");
+        response.sendError(500, ex.getMessage());
     }
 
     @ExceptionHandler(PropertyReferenceException.class)

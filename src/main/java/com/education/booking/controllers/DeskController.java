@@ -8,14 +8,14 @@ import com.education.booking.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
-
-import static com.education.booking.controllers.UserController.getUser;
 
 @RestController
 @RequestMapping("/desk")
@@ -30,6 +30,16 @@ public class DeskController {
         ModelMap model=new ModelMap();
         model.put("error", exception.getMessage());
         return getDesks(authentication, model);
+    }
+
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class,
+            ConversionFailedException.class,
+            IllegalArgumentException.class
+    })
+    public ModelAndView handlerOtherExceptions(Authentication authentication) {
+        ModelMap model = new ModelMap();
+        model.put("error", "Введены некорректные данные");
+        return getDesks(authentication,model);
     }
 
     @PostMapping
@@ -53,7 +63,6 @@ public class DeskController {
         model.put("desks",desks);
         List<Room> rooms = roomService.getRooms();
         model.put("rooms", rooms);
-        getUser(authentication, model);
         return new ModelAndView("desk",model);
     }
 }

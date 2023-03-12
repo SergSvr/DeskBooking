@@ -33,11 +33,11 @@ public class DeskServiceImpl implements DeskService {
     @Transactional
     public DeskDTO createDesk(DeskDTO deskDTO) {
         if (deskDTO.getRoomNumber() == null)
-            throw new CustomException("Room number was not set","create_desk", HttpStatus.BAD_REQUEST);
+            throw new CustomException("Room number was not set","create_desk");
         Room room = roomService.getRoomsByNumber(deskDTO.getRoomNumber());
         deskRepository.findByNumberAndStatusAndRoom(deskDTO.getNumber(), Status.A, room).ifPresent(
                 desk -> {
-                    throw new CustomException("Desk already exists","create_desk", HttpStatus.BAD_REQUEST);
+                    throw new CustomException("Desk already exists","create_desk");
                 }
         );
         Desk desk = new Desk();
@@ -61,7 +61,7 @@ public class DeskServiceImpl implements DeskService {
     public Desk getDesk(Long id) {
         return deskRepository.
                 findByIdAndStatus(id, Status.A).
-                orElseThrow(() -> new CustomException("Desk with id is not found","get_desk", HttpStatus.NOT_FOUND));
+                orElseThrow(() -> new CustomException("Desk with id is not found","get_desk"));
     }
 
     @Override

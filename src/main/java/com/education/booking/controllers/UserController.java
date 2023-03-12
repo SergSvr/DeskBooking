@@ -6,24 +6,23 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.education.booking.exceptions.CustomException;
 import com.education.booking.filter.CustomAuthenticationFilter;
-import com.education.booking.model.dto.DeskDTO;
 import com.education.booking.model.dto.UserDTO;
 import com.education.booking.model.entity.Role;
 import com.education.booking.model.entity.User;
 import com.education.booking.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -47,25 +46,32 @@ public class UserController {
         return showLoginPage(authentication, model);
     }
 
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class,
+            ConversionFailedException.class,
+            IllegalArgumentException.class
+    })
+    public ModelAndView handlerOtherExceptions(Authentication authentication) {
+        ModelMap model = new ModelMap();
+        model.put("error", "Введены некорректные данные");
+        return showLoginPage(authentication, model);
+    }
+
     @GetMapping(value = "/login")
     public ModelAndView showLoginPage(Authentication authentication, ModelMap model) {
-        getUser(authentication, model);
-        if (model.getAttribute("name") != null)
-            return new ModelAndView("index");
+        if (authentication!= null)
+            return new ModelAndView("index", model);
         else
-            return new ModelAndView("login");
+            return new ModelAndView("login", model);
     }
 
     @GetMapping(value = {"/index", "/"})
     public ModelAndView showIndexPage(Authentication authentication, ModelMap model) {
-        getUser(authentication, model);
-        return new ModelAndView("index");
+        return new ModelAndView("index", model);
     }
 
     @GetMapping(value = "/register")
     public ModelAndView showRegisterPage(Authentication authentication, ModelMap model) {
-        getUser(authentication, model);
-        if (model.getAttribute("name") != null)
+        if (authentication != null)
             return new ModelAndView("index");
         else
             return new ModelAndView("register", model);
@@ -80,8 +86,7 @@ public class UserController {
 
     @GetMapping(value = "/profile")
     public ModelAndView showProfile(Authentication authentication, ModelMap model) {
-        if (authentication.getName() != null) {
-            getUser(authentication, model);
+        if (authentication != null) {
             UserDTO userDTO = userService
                     .getUserDTO(authentication.getPrincipal().toString());
             model.put("user", userDTO);
@@ -93,11 +98,10 @@ public class UserController {
 
     @PostMapping(value = "/profile")
     public ModelAndView updateProfile(@ModelAttribute UserDTO userDTO, Authentication authentication, ModelMap model) {
-        getUser(authentication, model);
-        if (model.getAttribute("name") == null)
+        if (authentication == null)
             return new ModelAndView("index");
         else {
-            userDTO.setEmail(model.getAttribute("name").toString());
+            userDTO.setEmail(authentication.getName());
             userService.changeProfile(userDTO);
             return showProfile(authentication, model);
         }
@@ -134,14 +138,5 @@ public class UserController {
             log.warn("Refresh token is missing");
             response.sendRedirect(response.encodeRedirectURL("/login"));
         }
-    }
-
-    public static ModelMap getUser(Authentication authentication, ModelMap model) {
-        if (authentication != null) {
-            model.addAttribute("name", authentication.getName());
-            if (authentication.getAuthorities().toString().contains("ROLE_ADMIN"))
-                model.addAttribute("role", "admin");
-        }
-        return model;
     }
 }

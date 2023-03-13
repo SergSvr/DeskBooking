@@ -44,22 +44,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManager());
         customAuthenticationFilter.setFilterProcessesUrl("/api/login");
         http.csrf().disable();
-      //  http.authorizeRequests().anyRequest().permitAll();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.authorizeRequests().antMatchers("/login/**", "/token/**","/login").permitAll();
-        http.authorizeRequests().antMatchers("/api/login").permitAll();
+        http.authorizeRequests().antMatchers("/login/**","/api/login", "/token/**","/login").permitAll();
         http.authorizeRequests().antMatchers("/index","/").permitAll();
         http.authorizeRequests().antMatchers("/register").permitAll();
-        http.authorizeRequests().antMatchers(GET, "/user/**").hasAnyAuthority("ROLE_ADMIN");
-        http.authorizeRequests().antMatchers(POST, "/user/save/**").hasAnyAuthority("ROLE_ADMIN");
-        http.authorizeRequests().antMatchers(GET, "/user/save/**").hasAnyAuthority("ROLE_ADMIN");
+        http.authorizeRequests().antMatchers("/mybookings/**").hasAnyAuthority("ROLE_USER");
+        http.authorizeRequests().antMatchers("/users/**").hasAnyAuthority("ROLE_ADMIN");
+        http.authorizeRequests().antMatchers("/bookings/**").hasAnyAuthority("ROLE_ADMIN");
+        http.authorizeRequests().antMatchers("/room/**").hasAnyAuthority("ROLE_ADMIN");
+        http.authorizeRequests().antMatchers("/desk/**").hasAnyAuthority("ROLE_ADMIN");
         http.httpBasic().and()
                 .logout()
                 .logoutUrl("/logout")
                 .addLogoutHandler(logoutHandler)
                 .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK))
                 .permitAll();
-       // http.authorizeRequests().anyRequest().authenticated();
         http.addFilter(customAuthenticationFilter);
         http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }

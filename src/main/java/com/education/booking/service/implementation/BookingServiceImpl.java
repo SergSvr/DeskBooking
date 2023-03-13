@@ -5,7 +5,6 @@ import com.education.booking.model.dto.BookingDTO;
 import com.education.booking.model.dto.DeskDTO;
 import com.education.booking.model.entity.Booking;
 import com.education.booking.model.entity.Desk;
-import com.education.booking.model.entity.Room;
 import com.education.booking.model.entity.User;
 import com.education.booking.model.enums.Status;
 import com.education.booking.model.repository.BookingRepository;
@@ -47,6 +46,8 @@ public class BookingServiceImpl implements BookingService {
         if (bookingDTO.getEndTime().isBefore(bookingDTO.getStartTime()) || bookingDTO.getEndTime().compareTo(bookingDTO.getStartTime()) == 0) {
             throw new CustomException("Некорректный временной интервал", "create_booking");
         }
+        if(bookingDTO.getBookingDate().isBefore(LocalDate.now()))
+            throw new CustomException("Некорректная дата", "create_booking");
         bookingRepository.findAllByBookingDateAndStatusAndDesk(bookingDTO.getBookingDate(), Status.A, desk).forEach(
                 booking -> {
                     if (booking.getStartTime().isBefore(bookingDTO.getEndTime())
@@ -96,9 +97,14 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public List<DeskDTO> getAvailableDesks(BookingDTO bookingDTO){
+        if(bookingDTO.getStartTime().isAfter(bookingDTO.getEndTime()) || bookingDTO.getStartTime().compareTo(bookingDTO.getEndTime())==0)
+            throw new CustomException("Некорректный временной интервал", "get_available_desks");
+        if(bookingDTO.getBookingDate().isBefore(LocalDate.now()))
+            throw new CustomException("Некорректная дата", "get_available_desks");
         List<Desk> desks=deskRepository.findAllByStatusOrderByRoomDesc(Status.A);
         List<DeskDTO> result=new ArrayList<>();
         Iterator<Desk> i = desks.iterator();
+
         while (i.hasNext()) {
             Desk temp = i.next();
             bookingRepository.findAllByBookingDateAndStatusAndDesk(bookingDTO.getBookingDate(), Status.A, temp).forEach(

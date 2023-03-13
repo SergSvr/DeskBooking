@@ -12,7 +12,6 @@ import com.education.booking.service.RoomService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -50,10 +49,11 @@ public class DeskServiceImpl implements DeskService {
     }
 
     @Override
+    @Transactional
     public void deleteDesk(Long id) {
         Desk desk = getDesk(id);
         desk.setStatus(Status.C);
-        // Добавить букингов
+        desk.getBooking().forEach(booking ->  booking.setStatus(Status.C));
         deskRepository.save(desk);
     }
 

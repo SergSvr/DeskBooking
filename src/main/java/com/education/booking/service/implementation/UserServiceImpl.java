@@ -8,6 +8,7 @@ import com.education.booking.model.entity.Role;
 import com.education.booking.model.enums.Status;
 import com.education.booking.model.repository.RoleRepo;
 import com.education.booking.model.repository.UserRepository;
+import com.education.booking.service.BookingService;
 import com.education.booking.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -58,9 +59,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         User user = mapper.convertValue(userDTO, User.class);
         user.setStatus(Status.A);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        Role role = roleRepo.findByName("ROLE_USER").orElseThrow(
-                () -> new CustomException("Роль не найдена", "create_user"));
-        user.getRoles().add(role);
+//        Role role = roleRepo.findByName("ROLE_USER").orElseThrow(
+//                () -> new CustomException("Роль не найдена", "create_user"));
+//        user.getRoles().add(role);
         User save = userRepository.save(user);
         log.info("[Created]" + save);
     }
@@ -156,10 +157,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
         User user = getUser(id);
         user.setStatus(Status.C);
         user.setUpdatedAt(LocalDateTime.now());
+        user.getBooking().forEach(booking ->  booking.setStatus(Status.C));
         userRepository.save(user);
     }
 

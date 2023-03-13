@@ -28,14 +28,12 @@ public class Booking {
     Desk desk;
 
     @Column(name = "booking_date")
-    @JsonFormat(pattern="yyyy-MM-dd")
+    @JsonFormat(pattern="dd.MM.yyyy")
     LocalDate bookingDate;
 
-    //@JsonFormat(pattern = "HH:mm:ss")
     @Column(name = "start_time")
     private LocalTime startTime;
 
-    //@JsonFormat(pattern = "HH:mm:ss")
     @Column(name = "end_time")
     private LocalTime endTime;
 

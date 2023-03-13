@@ -9,9 +9,9 @@ import com.education.booking.service.RoomService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Slf4j
@@ -20,6 +20,7 @@ import java.util.List;
 public class RoomServiceImpl implements RoomService {
     public final RoomRepository roomRepository;
     private final ObjectMapper mapper;
+
     @Override
     public RoomDTO createRoom(RoomDTO roomDTO) {
         roomRepository.findByNumberAndStatus(roomDTO.getNumber(),Status.A).ifPresent(
@@ -36,10 +37,11 @@ public class RoomServiceImpl implements RoomService {
         return mapper.convertValue(save, RoomDTO.class);
     }
     @Override
+    @Transactional
     public void deleteRoom(Long id){
         Room room=getRoom(id);
         room.setStatus(Status.C);
-        // Добавить удаление столов и букингов
+        room.getDesks().forEach(desk -> desk.getBooking().forEach(booking -> booking.setStatus(Status.C)));
         roomRepository.save(room);
     }
     @Override

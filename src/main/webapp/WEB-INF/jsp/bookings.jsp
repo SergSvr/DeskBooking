@@ -53,7 +53,7 @@
 <body>
 <jsp:include page="navbar.jsp"/>
 <main role="main" class="container">
-    <h3>My Bookings</h3>
+    <h3>All active Bookings</h3>
     <div align="center">
         <table border="1" cellpadding="5"  class="table">
             <tr class="table-secondary">
@@ -71,19 +71,12 @@
                     <td><c:out value="${i.startTime}"/></td>
                     <td><c:out value="${i.endTime}"/></td>
                     <td><c:out value="${i.user.name}"/></td>
-                    <td><a href="/booking/delete?id=${i.id}">Cancel Booking</a></td>
+                    <td><a href="/bookings/delete?id=${i.id}">Cancel Booking</a></td>
                 </tr>
             </c:forEach>
         </table>
         </br>
-        <h3>Create Booking</h3>
-        <form class="form" method="post" action="/bookings">
-            <input type="text" value="${date}" id="date" name="date" required>
-            <input type="text" id="deskNumber" name="deskNumber" placeholder="Desk" required autofocus>
-            <input type="text" id="timeFrom" name="timeFrom" placeholder="timeFrom" required autofocus>
-            <input type="text" id="timeTo" name="timeTo" placeholder="timeTo" required autofocus>
-            <button class="btn" type="submit">Create Booking</button>
-        </form>
+
         <c:out value="${result}"/>
         <c:out value="${error}"/>
     </div>

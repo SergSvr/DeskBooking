@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ page contentType="text/html; charset=UTF-8" language="java"%>
 <!doctype html>
 <html>
@@ -25,15 +26,15 @@
 <main role="main" class="container">
 
     <div class="starter-template">
-        <% if (request.getAttribute("name")!=null) { %>
-        <p> Welcome ${name}!!!</p>
-        <% } else { %>
+        <div sec:authentication="name"></div>
+        <sec:authorize access="isAuthenticated()">
+        <p> Welcome user!!!</p>
+        </sec:authorize>
+        <sec:authorize access="!isAuthenticated()">
         <p> Welcome guest!!!</p>
-        <% } %>
+        </sec:authorize>
     </div>
-    <sec:authorize access="hasAnyRole('ROLE_USER', 'DEVELOPER')">
-        <p> Welcome auth!!!</p>
-    </sec:authorize>
+
 </main><!-- /.container -->
 
 <!-- Bootstrap core JavaScript

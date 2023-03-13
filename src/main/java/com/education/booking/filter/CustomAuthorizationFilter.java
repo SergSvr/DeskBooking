@@ -5,10 +5,12 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.education.booking.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -72,11 +74,13 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
     public static void clearCookie(HttpServletRequest request, HttpServletResponse response) {
         Cookie readCookie;
-        for (Cookie cookie : request.getCookies()) {
-            if (cookie.getName().contains("token")) {
-                readCookie = cookie;
-                readCookie.setMaxAge(0);
-                response.addCookie(readCookie);
+        if (request.getCookies()!=null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().contains("token")) {
+                    readCookie = cookie;
+                    readCookie.setMaxAge(0);
+                    response.addCookie(readCookie);
+                }
             }
         }
     }

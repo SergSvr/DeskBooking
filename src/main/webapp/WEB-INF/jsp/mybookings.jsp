@@ -91,23 +91,28 @@
     </div>
     <br/>
     <c:if test="${desks!=null}">
-    <table border="1" cellpadding="5" class="table">
-        <tr class="table-secondary">
-            <th>Room</th>
-            <th>Desk Number</th>
-            <th>Desk Label</th>
-            <th></th>
-        </tr>
-        <c:forEach var="d" items="${desks}">
-            <tr>
-                <td><c:out value="${d.roomNumber}"/></td>
-                <td><c:out value="${d.number}"/></td>
-                <td><c:out value="${d.label}"/></td>
-                <td><a href="/mybookings/book?id=${i.id}">Book</a></td>
-            </tr>
-        </c:forEach>
-        </c:if>
-    </table>
+        <form class="form" method="post" action="/mybookings/book">
+            <input type="hidden" value="${booking.bookingDate}" id="date" name="date">
+            <input type="hidden" value="${booking.startTime}" name="timeFrom" placeholder="timeFrom">
+            <input type="hidden" value="${booking.endTime}" name="timeTo" placeholder="timeTo">
+            <table border="1" cellpadding="5" class="table">
+                <tr class="table-secondary">
+                    <th>Room</th>
+                    <th>Desk Number</th>
+                    <th>Desk Label</th>
+                    <th></th>
+                </tr>
+                <c:forEach var="d" items="${desks}">
+                <tr>
+                    <td><c:out value="${d.roomNumber}"/></td>
+                    <td><c:out value="${d.number}"/></td>
+                    <td><c:out value="${d.label}"/></td>
+                    <td><button type="submit" name="deskNumber" value="${d.number}">Book</button></td>
+                </tr>
+                </c:forEach>
+        </form>
+        </table>
+    </c:if>
 </main>
 <script src="/js/popper.min.js"></script>
 <script src="/js/bootstrap.min.js"></script>

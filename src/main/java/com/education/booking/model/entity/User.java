@@ -2,7 +2,6 @@ package com.education.booking.model.entity;
 
 
 import com.education.booking.model.enums.Status;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AccessLevel;
 import lombok.Getter;

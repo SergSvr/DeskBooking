@@ -20,7 +20,7 @@
         <h2 class="form-signin-heading">Please sign in</h2>
         <p>
             <label for="username" class="sr-only">Username</label>
-            <input type="text" id="username" name="username" class="form-control" placeholder="Username" required autofocus>
+            <input type="text" id="username" name="username" class="form-control" placeholder="Email" required autofocus>
         </p>
         <p>
             <label for="password" class="sr-only">Password</label>

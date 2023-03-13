@@ -143,6 +143,7 @@ public class UserController {
             }
         } else {
             log.warn("Refresh token is missing");
+            clearCookie(request, response);
             response.sendRedirect(response.encodeRedirectURL("/login"));
         }
     }

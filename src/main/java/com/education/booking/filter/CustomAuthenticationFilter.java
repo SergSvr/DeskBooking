@@ -24,7 +24,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager manager;
-    public static final int cookieTime=1200;//seconds/refresh token+access token cookies lives 10 times longer and are replaced after cookieTime value
+    public static final int cookieTime = 1200;//seconds/refresh token+access token cookies lives 10 times longer and are replaced after cookieTime value
+
     public CustomAuthenticationFilter(AuthenticationManager manager) {
         this.manager = manager;
     }
@@ -51,36 +52,37 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
         String accessToken = JWT.create()
                 .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + cookieTime*1000))
+                .withExpiresAt(new Date(System.currentTimeMillis() + cookieTime * 10000))
                 .withIssuer(request.getRequestURL().toString())
                 .withClaim("roles", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .sign(algorithm);
         String refreshToken = JWT.create()
                 .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + cookieTime* 10000L))
+                .withExpiresAt(new Date(System.currentTimeMillis() + cookieTime * 10000L))
                 .withIssuer(request.getRequestURL().toString())
                 .sign(algorithm);
         setCookies(request, response, accessToken, refreshToken);
         log.info("access_token" + accessToken);
     }
 
-    public static void setCookies(HttpServletRequest request,HttpServletResponse response, String accessToken, String refreshToken) throws IOException {
+    public static void setCookies(HttpServletRequest request, HttpServletResponse response, String accessToken, String refreshToken) throws IOException {
         Cookie c1 = new Cookie("access_token", accessToken);
         c1.setSecure(false);
         c1.setDomain("127.0.0.1");
         c1.setPath("/");
-        c1.setMaxAge(cookieTime*10);
+        c1.setMaxAge(cookieTime * 10);
         Cookie c2 = new Cookie("refresh_token", refreshToken);
         c2.setSecure(false);
         c2.setDomain("127.0.0.1");
         c2.setPath("/");
-        c2.setMaxAge(cookieTime*10);
+        c2.setMaxAge(cookieTime * 10);
         response.addCookie(c1);
         response.addCookie(c2);
         String referer = request.getHeader("Referer");
-        if (referer==null || referer.contains("/index")|| referer.contains("token"))
+        if (referer == null || referer.contains("index") || referer.contains("token") || referer.contains("login"))
             response.sendRedirect(response.encodeRedirectURL("/index"));
-        response.sendRedirect(referer);
+        else
+            response.sendRedirect(referer);
     }
 
     @Override

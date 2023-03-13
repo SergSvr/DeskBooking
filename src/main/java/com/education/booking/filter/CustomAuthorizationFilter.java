@@ -26,7 +26,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (request.getServletPath().equals("/login") || request.getServletPath().equals("/token/refresh")||request.getServletPath().equals("/logout")) {
+        if (request.getServletPath().equals("/api/login") || request.getServletPath().equals("/token/refresh")||request.getServletPath().equals("/logout")) {
             filterChain.doFilter(request, response);
         } else {
             String token = readServletCookie(request, "access_token");
@@ -75,7 +75,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         for (Cookie cookie : request.getCookies()) {
             if (cookie.getName().contains("token")) {
                 readCookie = cookie;
-                readCookie.setMaxAge(-1);
+                readCookie.setMaxAge(0);
                 response.addCookie(readCookie);
             }
         }

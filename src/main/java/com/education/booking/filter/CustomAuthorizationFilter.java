@@ -3,6 +3,7 @@ package com.education.booking.filter;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,7 +26,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (request.getServletPath().equals("/api/login") || request.getServletPath().equals("/api/token/refresh")||request.getServletPath().equals("/logout")) {
+        if (request.getServletPath().equals("/login") || request.getServletPath().equals("/token/refresh")||request.getServletPath().equals("/logout")) {
             filterChain.doFilter(request, response);
         } else {
             String token = readServletCookie(request, "access_token");
@@ -43,12 +44,17 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     filterChain.doFilter(request, response);
                     log.warn("doFilterInternal: " + username);
-                } catch (Exception e) {
+                }catch (TokenExpiredException e) {
+                    log.error("Token expired: " + e.getMessage());
+                    response.sendRedirect(response.encodeRedirectURL("/token/refresh"));
+                }
+                catch (Exception e) {
                     log.error("Some error: " + e.getMessage());
                     clearCookie(request, response);
                     response.sendRedirect(response.encodeRedirectURL("/login"));
                 }
             } else {
+                clearCookie(request, response);
                 filterChain.doFilter(request, response);
             }
         }
@@ -69,7 +75,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         for (Cookie cookie : request.getCookies()) {
             if (cookie.getName().contains("token")) {
                 readCookie = cookie;
-                readCookie.setMaxAge(0);
+                readCookie.setMaxAge(-1);
                 response.addCookie(readCookie);
             }
         }

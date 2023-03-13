@@ -26,39 +26,39 @@ public class DeskController {
     private final RoomService roomService;
 
     @ExceptionHandler(CustomException.class)
-    public ModelAndView handler(CustomException exception,Authentication authentication){
+    public ModelAndView handler(CustomException exception){
         ModelMap model=new ModelMap();
         model.put("error", exception.getMessage());
-        return getDesks(authentication, model);
+        return getDesks(model);
     }
 
     @ExceptionHandler({MethodArgumentTypeMismatchException.class,
             ConversionFailedException.class,
             IllegalArgumentException.class
     })
-    public ModelAndView handlerOtherExceptions(Authentication authentication) {
+    public ModelAndView handlerOtherExceptions() {
         ModelMap model = new ModelMap();
         model.put("error", "Введены некорректные данные");
-        return getDesks(authentication,model);
+        return getDesks(model);
     }
 
     @PostMapping
     @Operation(summary = "создать стол")
-    public ModelAndView createDesk(@ModelAttribute DeskDTO deskDTO,Authentication authentication, ModelMap model) {
+    public ModelAndView createDesk(@ModelAttribute DeskDTO deskDTO, ModelMap model) {
         model.put("result",deskService.createDesk(deskDTO));
-        return getDesks(authentication, model);
+        return getDesks(model);
     }
 
     @GetMapping("/delete")
     @Operation(summary = "удалить стол")
-    public ModelAndView deleteDesk(@RequestParam Long id,Authentication authentication, ModelMap model) {
+    public ModelAndView deleteDesk(@RequestParam Long id, ModelMap model) {
         deskService.deleteDesk(id);
-        return getDesks(authentication, model);
+        return getDesks(model);
     }
 
     @GetMapping
     @Operation(summary="получить список столов")
-    public ModelAndView getDesks(Authentication authentication, ModelMap model)
+    public ModelAndView getDesks(ModelMap model)
     {   List<DeskDTO> desks=deskService.getDesks();
         model.put("desks",desks);
         List<Room> rooms = roomService.getRooms();

@@ -3,7 +3,6 @@ package com.education.booking.controllers;
 import com.education.booking.model.dto.BookingDTO;
 import com.education.booking.model.dto.DeskDTO;
 import com.education.booking.model.entity.Booking;
-import com.education.booking.model.entity.Desk;
 import com.education.booking.service.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

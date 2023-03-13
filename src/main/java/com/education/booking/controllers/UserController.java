@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.education.booking.filter.CustomAuthorizationFilter.clearCookie;
 import static com.education.booking.filter.CustomAuthorizationFilter.readServletCookie;
 
 @Slf4j
@@ -65,7 +66,7 @@ public class UserController {
     }
 
     @GetMapping(value = {"/index", "/"})
-    public ModelAndView showIndexPage(Authentication authentication, ModelMap model) {
+    public ModelAndView showIndexPage(ModelMap model) {
         return new ModelAndView("index", model);
     }
 
@@ -119,7 +120,7 @@ public class UserController {
                 User user = userService.getUser(email);
                 String accessToken = JWT.create()
                         .withSubject(user.getEmail())
-                        .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 100000))
+                        .withExpiresAt(new Date(System.currentTimeMillis() + CustomAuthenticationFilter.cookieTime*1000))
                         .withIssuer(request.getRequestURL().toString())
                         .withClaim("roles", user
                                 .getRoles()
@@ -127,11 +128,17 @@ public class UserController {
                                 .map(Role::getName)
                                 .collect(Collectors.toList()))
                         .sign(algorithm);
-
-                CustomAuthenticationFilter.setCookies(response, accessToken, refreshToken);
+                String refreshTokenNew = JWT.create()
+                        .withSubject(user.getEmail())
+                        .withExpiresAt(new Date(System.currentTimeMillis() + CustomAuthenticationFilter.cookieTime*10000L))
+                        .withIssuer(request.getRequestURL().toString())
+                        .sign(algorithm);
+                CustomAuthenticationFilter.setCookies(request, response, accessToken, refreshTokenNew);
                 log.info("Refreshed access_token" + accessToken);
+                log.info("Refreshed refresh_token" + refreshTokenNew);
             } catch (Exception e) {
                 log.warn("Refresh token error" + e);
+                clearCookie(request, response);
                 response.sendRedirect(response.encodeRedirectURL("/login"));
             }
         } else {

@@ -59,9 +59,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         User user = mapper.convertValue(userDTO, User.class);
         user.setStatus(Status.A);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-//        Role role = roleRepo.findByName("ROLE_USER").orElseThrow(
-//                () -> new CustomException("Роль не найдена", "create_user"));
-//        user.getRoles().add(role);
         User save = userRepository.save(user);
         log.info("[Created]" + save);
     }
